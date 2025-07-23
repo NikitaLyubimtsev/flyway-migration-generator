@@ -1,10 +1,11 @@
 plugins {
     id("java")
     `java-library`
+    `maven-publish`
 }
 
-group = "ru.lubimobile"
-version = "0.0.1-SNAPSHOT"
+//group = "ru.lubimobile"
+//version = "0.0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -12,4 +13,51 @@ repositories {
 
 dependencies {
     api(libs.jakarta.persistence.api)
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/NikitaLyubimtsev/flyway-migration-generator")
+            credentials {
+                username = project.findProperty("gpr.key") as String? ?: System.getenv("USER")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GPR_TOKEN")
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("grp") {
+            from(components["java"])
+
+            groupId = project.group.toString()
+            artifactId = "flyway-migration-generator-api"
+            version = project.version.toString()
+
+            pom {
+                name.set("Flyway Migration Generator API")
+                description.set("Provides an API for interacting with the Flyway migration generator KSP")
+                url.set("https://https://github.com/NikitaLyubimtsev/flyway-migration-generator")
+
+                licenses {
+                    license {
+                        name.set("Apache-2.0 license")
+                        url.set("http://www.apache.org/licenses/")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("nikitalyubimtsev")
+                        name.set("Nikita Lyubimtsev")
+                        email.set("lyubimtsevn.a@yandex.ru")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/NikitaLyubimtsev/flyway-migration-generator.git")
+                    developerConnection.set("scm:git:ssh://github.com:NikitaLyubimtsev/flyway-migration-generator.git")
+                    url.set("https://github.com/NikitaLyubimtsev/flyway-migration-generator")
+                }
+            }
+        }
+    }
 }

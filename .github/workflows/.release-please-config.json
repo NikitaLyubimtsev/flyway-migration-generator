@@ -1,0 +1,10 @@
+{
+  "release-type": "gradle",
+  "packages": {
+    ".": {
+      "package-name": "flyway-migration-generator",
+      "path": ".",
+      "release-type": "gradle"
+    }
+  }
+}

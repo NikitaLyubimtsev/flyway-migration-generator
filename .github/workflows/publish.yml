@@ -1,0 +1,60 @@
+name: Publish on Release Tag
+
+on:
+    push:
+        tags:
+            - 'v.*' # Только для тегов типа V1.0.0
+    workflow_dispatch:
+
+
+jobs:
+    build-and-publish:
+        runs-on: ubuntu-latest
+
+        permissions:
+            contents: write
+            packages: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup JDK
+              uses: actions/setup-java@v3
+              with:
+                  distribution: 'temurin'
+                  java-version: '21'
+
+            - name: Setup version from tag
+              id: extract_version
+              run: |
+                  # GITHUB_REF = refs/tags/v1.2.3
+                  TAG=${GITHUB_REF#refs/tags/}
+                  VERSION=$(TAG#v)
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+                  if [[ "$VERSION" == *-SNAPSHOT ]]; then
+                    echo "is_snapshot=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "is_snapshot=false" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Set version in gradle.properties
+              run: | 
+                  # перезапишем gradle.properties, чтобы Gradle взял нужную версию
+                  sed -i "s/^version=.*/version=${{ steps.extract_version.outputs.version }}/" gradle.properties
+
+            - name: Build and publish
+              run: ./gradlew
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+
+            - name: Create GitHub Release
+              if: ${{ steps.extract_version.outputs.is_snapshot != 'SNAPSHOT' }}
+              uses: softprops/actions-gh-release@v2
+              with:
+                  tag_name: v${{ steps.extract_version.outputs.version }}
+                  name: Release ${{ steps.extract_version.outputs.version }}
+                  draft: false
+                  prerelease: ${{ contains(steps.extract_version.outputs.version, '-rc') || contains(steps.extract_version.outputs.version, '-beta') }}
+                  generate_release_note: true

@@ -25,4 +25,9 @@ replay_pid*
 
 # InteljIDEA settings #
 /.idea/
+/.gradle/
 /ksp-test/src/main/resources/
+/ksp-test/build/
+/api/build/
+/build/
+/ksp/build/

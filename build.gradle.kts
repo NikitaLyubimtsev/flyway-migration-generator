@@ -1,3 +1,8 @@
+plugins {
+    `maven-publish`
+    `java-library`
+}
+
 allprojects {
     group = project.property("group").toString()
     version = project.property("version").toString()

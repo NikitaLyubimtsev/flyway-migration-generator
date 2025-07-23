@@ -1,0 +1,15 @@
+package ru.lubimobile.annotation;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+
+@Target({METHOD, FIELD})
+@Retention(RetentionPolicy.SOURCE)
+public @interface Trigger {
+
+    String name() default "";
+}

@@ -1,12 +1,7 @@
 {
-  "release-type": "java-yoshi",
-  "packages": {
-    ".": {
-      "release-type": "simple",
-      "path": ".",
-      "package-name": "flyway-migration-generator",
-      "version-file": "gradle.properties",
-      "changelog-path": "CHANGELOG.md"
-    }
-  }
+  "release-type": "simple",
+  "path": ".",
+  "package-name": "flyway-migration-generator",
+  "version-file": "gradle.properties",
+  "changelog-path": "CHANGELOG.md"
 }

@@ -1,10 +1,10 @@
 {
-  "release-type": "gradle",
+  "release-type": "java-yoshi",
   "packages": {
     ".": {
       "package-name": "flyway-migration-generator",
       "path": ".",
-      "release-type": "gradle"
+      "release-type": "java-yoshi"
     }
   }
 }

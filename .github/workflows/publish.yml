@@ -49,12 +49,12 @@ jobs:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
 
-            - name: Create GitHub Release
-              if: ${{ steps.extract_version.outputs.is_snapshot != 'SNAPSHOT' }}
-              uses: softprops/actions-gh-release@v1
-              with:
-                  tag_name: v${{ steps.extract_version.outputs.version }}
-                  name: Release ${{ steps.extract_version.outputs.version }}
-                  draft: false
-                  prerelease: ${{ contains(steps.extract_version.outputs.version, '-rc') || contains(steps.extract_version.outputs.version, '-beta') }}
-                  generate_release_note: true
+#            - name: Create GitHub Release
+#              if: ${{ steps.extract_version.outputs.is_snapshot != 'SNAPSHOT' }}
+#              uses: softprops/actions-gh-release@v1
+#              with:
+#                  tag_name: v${{ steps.extract_version.outputs.version }}
+#                  name: Release ${{ steps.extract_version.outputs.version }}
+#                  draft: false
+#                  prerelease: ${{ contains(steps.extract_version.outputs.version, '-rc') || contains(steps.extract_version.outputs.version, '-beta') }}
+#                  generate_release_note: true

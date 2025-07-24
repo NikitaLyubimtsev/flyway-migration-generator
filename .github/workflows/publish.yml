@@ -3,7 +3,7 @@ name: Publish on Release Tag
 on:
     push:
         tags:
-            - 'v.*' # Только для тегов типа V1.0.0
+            - 'v*' # Только для тегов типа V1.0.0
     workflow_dispatch:
 
 
@@ -51,7 +51,7 @@ jobs:
 
             - name: Create GitHub Release
               if: ${{ steps.extract_version.outputs.is_snapshot != 'SNAPSHOT' }}
-              uses: softprops/actions-gh-release@v2
+              uses: softprops/actions-gh-release@v1
               with:
                   tag_name: v${{ steps.extract_version.outputs.version }}
                   name: Release ${{ steps.extract_version.outputs.version }}

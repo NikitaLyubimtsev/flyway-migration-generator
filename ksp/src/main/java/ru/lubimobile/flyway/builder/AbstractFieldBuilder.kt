@@ -33,6 +33,8 @@ abstract class AbstractFieldBuilder : FieldBuilder {
             else -> property.simpleName.asString()
         }
 
+        val triggerAnnotation: String? = property.getAnnotation(AnnotationName.TRIGGER)?.arguments?.getValue("name")
+
         if (property.hasAnnotationShort(AnnotationName.ID)) {
             return SqlField(
                 name = columnName,
@@ -61,7 +63,8 @@ abstract class AbstractFieldBuilder : FieldBuilder {
             sqlType = sqlType,
             isNullable = nullable,
             isUnique = columnAnnotation?.arguments?.getValue("unique") ?: false,
-            isAutoIncrement = property.hasAnnotationShort(AnnotationName.GENERATED_VALUE)
+            isAutoIncrement = property.hasAnnotationShort(AnnotationName.GENERATED_VALUE),
+            trigger = triggerAnnotation
         )
     }
 

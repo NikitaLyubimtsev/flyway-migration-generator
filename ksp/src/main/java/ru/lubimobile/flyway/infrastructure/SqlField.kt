@@ -9,7 +9,8 @@ data class SqlField(
     val isNullable: Boolean = false,
     val isUnique: Boolean = false,
     val isPrimaryKey: Boolean = false,
-    val isAutoIncrement: Boolean = false
+    val isAutoIncrement: Boolean = false,
+    val trigger: String? = null
 ) {
 
     fun generateSqlString(): String = buildString {
@@ -18,5 +19,10 @@ data class SqlField(
         if (isAutoIncrement) append(" AUTOINCREMENT")
         if (!isNullable) append(" NOT NULL")
         if (isUnique) append(" UNIQUE")
+        if (trigger != null) append(" TRIGGER $trigger")
     }
 }
+
+data class Trigger(
+    val name: String = "default trigger"
+)

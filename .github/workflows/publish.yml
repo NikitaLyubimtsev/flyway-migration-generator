@@ -59,7 +59,7 @@ jobs:
             # 6) Создаем GitHub Release на тег vX.Y.Z
             - name: Create GitHub Release
               if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
-              uses: softprops/actions-gh-release@v1
+              uses: softprops/action-gh-release@v2
               with:
                   tag_name: "v${{ steps.red_version.outputs.version }}"
                   name: "Release ${{ steps.red_version.outputs.version }}"

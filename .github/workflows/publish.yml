@@ -69,6 +69,7 @@ jobs:
 
             # 7) После релиза - bump патч-версию и добавляем суффикс -SNAPSHOT
             - name: Bump to next patch-SNAPSHOT
+              if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |

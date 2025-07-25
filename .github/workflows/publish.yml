@@ -1,36 +1,32 @@
-name: Publish on Release Tag
+name: Build ▶ Publish ▶ Release ▶ Bump
 
 on:
     push:
-        tags:
-            - 'v*' # Только для тегов типа V1.0.0
+        branches:
+            - main
     workflow_dispatch:
 
+permissions:
+    contents: write
+    packages: write
 
 jobs:
-    build-and-publish:
+    build-publish-release:
         runs-on: ubuntu-latest
 
-        permissions:
-            contents: write
-            packages: write
-
+        # 1) Забираем код
         steps:
-            - name: Checkout
+            - name: Checkout code
               uses: actions/checkout@v4
-
-            - name: Setup JDK
-              uses: actions/setup-java@v3
               with:
-                  distribution: 'temurin'
-                  java-version: '21'
+                  fetch-depth: 0
 
-            - name: Setup version from tag
-              id: extract_version
+            # 2) Считываем текущую версию из gradle.properties
+            - name: Read version
+              id: read_version
               run: |
-                  # GITHUB_REF = refs/tags/v1.2.3
-                  TAG=${GITHUB_REF#refs/tags/}
-                  VERSION=$(TAG#v)
+                  LINE=$(grep '^version=' gradle.properties)
+                  VERSION=${LINE#version=}
                   echo "version=$VERSION" >> $GITHUB_OUTPUT
                   if [[ "$VERSION" == *-SNAPSHOT ]]; then
                     echo "is_snapshot=true" >> $GITHUB_OUTPUT
@@ -38,23 +34,52 @@ jobs:
                     echo "is_snapshot=false" >> $GITHUB_OUTPUT
                   fi
 
-            - name: Set version in gradle.properties
-              run: | 
-                  # перезапишем gradle.properties, чтобы Gradle взял нужную версию
-                  sed -i "s/^version=.*/version=${{ steps.extract_version.outputs.version }}/" gradle.properties
+            # 3) Если это snapshot - просто выходим (ни сборки, ни релиза)
+            - name: Skip on snapshot
+              if: ${{ steps.read_version.outputs.is_snapshot == 'true' }}
+              run: |
+                  echo "Detected SNAPSHOT version (${{ steps.read_version.outputt.version }})"
 
-            - name: Build and publish
-              run: ./gradlew
+            # 4) Устанавливаем JDK и Gradle
+            - name: Setup JDK
+              if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
+              uses: actions/setup-java@v3
+              with:
+                  distribution: 'temurin'
+                  java-version: '21'
+
+            # 5) Собираем и публикуем модули
+            - name: Build & Publish ti GitHub Packages
+              if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+              run: |
+                ./gradlew cleanPublish --no-daemon -x test
 
-#            - name: Create GitHub Release
-#              if: ${{ steps.extract_version.outputs.is_snapshot != 'SNAPSHOT' }}
-#              uses: softprops/actions-gh-release@v1
-#              with:
-#                  tag_name: v${{ steps.extract_version.outputs.version }}
-#                  name: Release ${{ steps.extract_version.outputs.version }}
-#                  draft: false
-#                  prerelease: ${{ contains(steps.extract_version.outputs.version, '-rc') || contains(steps.extract_version.outputs.version, '-beta') }}
-#                  generate_release_note: true
+            # 6) Создаем GitHub Release на тег vX.Y.Z
+            - name: Create GitHub Release
+              if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
+              uses: softprops/actions-gh-release@v1
+              with:
+                  tag_name: "v${{ steps.red_version.outputs.version }}"
+                  name: "Release ${{ steps.red_version.outputs.version }}"
+                  draft: false
+                  prerelease: ${{ contains(steps.extract_version.outputs.version, '-rc') || contains(steps.extract_version.outputs.version, '-beta') }}
+                  generate_release_note: true
+
+            # 7) После релиза - bump патч-версию и добавляем суффикс -SNAPSHOT
+            - name: Bump to next patch-SNAPSHOT
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  CUR=${{ steps.red_version.outputs.version }}
+                  NEXT=$(echo $CUR || awk -F. -v OFS=. '{$NF = $NF+1; print}')
+                  echo "🔄Bumping version to ${NEXT}-SNAPSHOT"
+                  sed -i "s/^version=.*/version=${NEXT}-SNAPSHOT/" gradle.properties
+                  
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git checkout main
+                  git add gradle.properties
+                  git commit -m "chore: bump to ${NEXT}-SNAPSHOT"
+                  git push

@@ -68,26 +68,11 @@ jobs:
                   draft: false
                   prerelease: ${{ contains(steps.read_version.outputs.version, '-rc') || contains(steps.read_version.outputs.version, '-beta') }}
                   generate_release_notes: true
+                  files: |
+                      ksp/build/libs/ksp-${{ steps.read_version.outputs.version }}.jar
+                      api/build/libs/api-${{ steps.read_version.outputs.version }}.jar
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-            # Скачиваем KSP packages в Release
-            -   name: Upload KSP JAR
-                uses: softprops/upload-release-asset@v1
-                with:
-                    upload_url: ${{ steps.create_release.outputs.upload_url }}
-                    asset_path: ksp/build/libs/flyway-migration-generator-ksp-${{ steps.read_version.outputs.version }}.jar
-                    asset_name: flyway-migration-generator-ksp-${{ steps.read_version.outputs.version }}.jar
-                    asset_content_type: application/java-archive
-
-            # Скачиваем API packages в Release
-            -   name: Upload API JAR
-                uses: softprops/upload-release-asset@v1
-                with:
-                    upload_url: ${{ steps.create_release.outputs.upload_url }}
-                    asset_path: api/build/libs/flyway-migration-generator-api-${{ steps.read_version.outputs.version }}.jar
-                    asset_name: flyway-migration-generator-api-${{ steps.read_version.outputs.version }}.jar
-                    asset_content_type: application/java-archive
 
             # 7) После релиза - bump патч-версию и добавляем суффикс -SNAPSHOT
             - name: Bump to next patch-SNAPSHOT

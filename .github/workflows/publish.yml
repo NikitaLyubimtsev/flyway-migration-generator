@@ -51,8 +51,6 @@ jobs:
             # 5) Собираем и публикуем модули
             - name: Build & Publish ti GitHub Packages
               if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                 ./gradlew cleanPublish --no-daemon -x test
 
@@ -70,8 +68,6 @@ jobs:
             # 7) После релиза - bump патч-версию и добавляем суффикс -SNAPSHOT
             - name: Bump to next patch-SNAPSHOT
               if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   CUR=${{ steps.red_version.outputs.version }}
                   NEXT=$(echo $CUR || awk -F. -v OFS=. '{$NF = $NF+1; print}')

@@ -4,9 +4,6 @@ plugins {
     `maven-publish`
 }
 
-//group = "ru.lubimobile"
-//version = "0.0.1-SNAPSHOT"
-
 repositories {
     mavenCentral()
 }
@@ -21,8 +18,10 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/NikitaLyubimtsev/flyway-migration-generator")
             credentials {
-                username = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_ACTOR")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+//                username = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_ACTOR")
+                username = System.getenv("GITHUB_ACTOR")
+//                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }

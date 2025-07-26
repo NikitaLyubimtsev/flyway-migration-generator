@@ -51,6 +51,9 @@ jobs:
             # 5) Собираем и публикуем модули
             - name: Build & Publish ti GitHub Packages
               if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_ACTOR: ${{ github.actor }}
               run: |
                 ./gradlew cleanPublish --no-daemon -x test
 
@@ -64,6 +67,8 @@ jobs:
                   draft: false
                   prerelease: ${{ contains(steps.extract_version.outputs.version, '-rc') || contains(steps.extract_version.outputs.version, '-beta') }}
                   generate_release_note: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             # 7) После релиза - bump патч-версию и добавляем суффикс -SNAPSHOT
             - name: Bump to next patch-SNAPSHOT

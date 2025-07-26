@@ -60,21 +60,40 @@ jobs:
             # 6) Создаем GitHub Release на тег vX.Y.Z
             - name: Create GitHub Release
               if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
+              id: create_release
               uses: softprops/action-gh-release@v2
               with:
-                  tag_name: "v${{ steps.red_version.outputs.version }}"
-                  name: "Release ${{ steps.red_version.outputs.version }}"
+                  tag_name: "v${{ steps.read_version.outputs.version }}"
+                  name: "Release ${{ steps.read_version.outputs.version }}"
                   draft: false
-                  prerelease: ${{ contains(steps.extract_version.outputs.version, '-rc') || contains(steps.extract_version.outputs.version, '-beta') }}
-                  generate_release_note: true
+                  prerelease: ${{ contains(steps.read_version.outputs.version, '-rc') || contains(steps.read_version.outputs.version, '-beta') }}
+                  generate_release_notes: true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            # Скачиваем KSP packages в Release
+            -   name: Upload KSP JAR
+                uses: softprops/upload-release-asset@v1
+                with:
+                    upload_url: ${{ steps.create_release.outputs.upload_url }}
+                    asset_path: ksp/build/libs/flyway-migration-generator-ksp-${{ steps.read_version.outputs.version }}.jar
+                    asset_name: flyway-migration-generator-ksp-${{ steps.read_version.outputs.version }}.jar
+                    asset_content_type: application/java-archive
+
+            # Скачиваем API packages в Release
+            -   name: Upload API JAR
+                uses: softprops/upload-release-asset@v1
+                with:
+                    upload_url: ${{ steps.create_release.outputs.upload_url }}
+                    asset_path: api/build/libs/flyway-migration-generator-api-${{ steps.read_version.outputs.version }}.jar
+                    asset_name: flyway-migration-generator-api-${{ steps.read_version.outputs.version }}.jar
+                    asset_content_type: application/java-archive
 
             # 7) После релиза - bump патч-версию и добавляем суффикс -SNAPSHOT
             - name: Bump to next patch-SNAPSHOT
               if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
               run: |
-                  CUR=${{ steps.red_version.outputs.version }}
+                  CUR=${{ steps.read_version.outputs.version }}
                   NEXT=$(echo $CUR || awk -F. -v OFS=. '{$NF = $NF+1; print}')
                   echo "🔄Bumping version to ${NEXT}-SNAPSHOT"
                   sed -i "s/^version=.*/version=${NEXT}-SNAPSHOT/" gradle.properties

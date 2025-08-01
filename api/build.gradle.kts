@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    api(libs.jakarta.persistence.api)
+//    api(libs.jakarta.persistence.api)
 }
 
 publishing {

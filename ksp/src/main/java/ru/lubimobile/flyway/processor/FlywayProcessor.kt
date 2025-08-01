@@ -5,9 +5,10 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import ru.lubimobile.flyway.builder.MySQLBuilder
-import ru.lubimobile.flyway.builder.PostgreSQLBuilder
-import ru.lubimobile.flyway.builder.SQLBuilder
-import ru.lubimobile.flyway.infrastructure.AnnotationName
+import ru.lubimobile.flyway.builder.PostgreMigrationBuilder
+import ru.lubimobile.flyway.builder.MigrationBuilder
+import ru.lubimobile.flyway.infrastructure.Migration
+import ru.lubimobile.flyway.infrastructure.SourceType
 import java.io.File
 
 class FlywayProcessor(
@@ -15,6 +16,7 @@ class FlywayProcessor(
 ) : SymbolProcessor {
 
     private val defaultOutputPath = "src/main/resources/flyway"
+    private val defaultSchemaPath = "src/main/resources/schema"
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         println("> Run generator with options: ${environment.options}")
@@ -29,34 +31,52 @@ class FlywayProcessor(
         val outputDir: String = environment.options[FlywayOptions.OUTPUT_DIR.option] ?: getDefaultOutputPath(environment)
 
         val version = environment.options[FlywayOptions.MIGRATION_VERSION.option] ?: "V1.0_default"
-        val file = File(outputDir, "${version}.sql")
-        file.parentFile.mkdirs()
+        val migrationFile = File(outputDir, "${version}.sql")
+        val schemaFile = File(getDefaultSchemaPath(environment), "${version}.json")
+        migrationFile.parentFile.mkdirs()
+        schemaFile.parentFile.mkdirs()
 
         val databaseType: String? = environment.options[FlywayOptions.DATABASE_TYPE.option]?.lowercase()
 
-        val sqlBuilder: SQLBuilder = when (databaseType) {
+        val sqlBuilder: MigrationBuilder = when (databaseType) {
             "mysql" -> MySQLBuilder
-            else -> PostgreSQLBuilder
+            else -> PostgreMigrationBuilder
         }
         println("> Selected SQLBuilder: $sqlBuilder")
 
         sqlBuilder.resolver(resolver)
-        //sqlBuilder.symbols()
+        sqlBuilder.migration(Migration(type = SourceType.of(sqlBuilder), name = version))
 
-        file.writeText(sqlBuilder.build())
+        val migration: Migration = sqlBuilder.build()
 
-        println("> Generated migration: ${file.absolutePath}")
+        migrationFile.writeText(migration.createMigrationSql())
+        schemaFile.writeText(migration.createSchemas())
+
+        println("> Generated migration: ${migrationFile.absolutePath}")
 
         //return sqlBuilder.getKSAnnotatedList()
         return emptyList()
     }
 
-    private fun getDefaultOutputPath(environment: SymbolProcessorEnvironment): String {
+    private fun getDefaultOutputPath(environment: SymbolProcessorEnvironment): String = getDefaultPath(environment, defaultOutputPath)
+//    {
+//        val root = environment.options[FlywayOptions.PROJECT_DIR.name] ?: System.getProperty("user.dir")
+//
+//        environment.logger.error("Project directory not provided in KSP args")
+//
+//        val file = File(root, defaultOutputPath).also { it.mkdirs() }
+//        return file.absolutePath
+//    }
+
+    private fun getDefaultSchemaPath(environment: SymbolProcessorEnvironment): String = getDefaultPath(environment, defaultSchemaPath)
+
+    private fun getDefaultPath(environment: SymbolProcessorEnvironment, path: String): String {
         val root = environment.options[FlywayOptions.PROJECT_DIR.name] ?: System.getProperty("user.dir")
 
         environment.logger.error("Project directory not provided in KSP args")
 
-        val file = File(root, defaultOutputPath).also { it.mkdirs() }
+        val file = File(root, path).also { it.mkdirs() }
+
         return file.absolutePath
     }
 }

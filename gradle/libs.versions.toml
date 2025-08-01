@@ -2,20 +2,37 @@
 kotlin = "2.1.21"
 ksp = "2.1.21-2.0.2"
 jakarta-persistence-api = "3.1.0"
+serialization = "1.9.0"
+datetime = "0.7.1"
+junit-jupiter = "5.10.1"
 
 [libraries]
+flyway-core = { group = "org.flywaydb", name = "flyway-core" }
+flyway-database-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql" }
+spring-boot-starter-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa" }
+
 symbol-processing-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
 symbol-processing = { group = "com.google.devtools.ksp", name = "symbol-processing", version.ref = "ksp" }
 symbol-processing-aa-embeddable = { group = "com.google.devtools.ksp", name = "symbol-processing-aa-embeddable", version.ref = "ksp" }
 
 jakarta-persistence-api = { group = "jakarta.persistence", name = "jakarta.persistence-api", version.ref = "jakarta-persistence-api" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "datetime" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 kotlin-compiler-embeddable = { group = "org.jetbrains.kotlin", name = "kotlin-compiler-embeddable", version.ref = "kotlin" }
 
 kctfork-kotlin-compile-testing-ksp = { group = "dev.zacsweers.kctfork", name = "ksp", version = "0.8.0" }
 
+kotlin-logging-jvm = { group = "io.github.microutils", name = "kotlin-logging-jvm", version = "3.0.5" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version = "2.0.12" }
+
+mockk = { group = "io.mockk", name = "mockk", version = "1.13.8" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
+junit-jupiter-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit-jupiter" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+byte-buddy-agent = { group = "net.bytebuddy", name = "byte-buddy-agent", version = "1.14.6" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"  }

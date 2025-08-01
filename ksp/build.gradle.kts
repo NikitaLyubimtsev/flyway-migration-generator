@@ -2,6 +2,7 @@ plugins {
     id("java")
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
     `java-library`
     `maven-publish`
 }
@@ -10,14 +11,24 @@ repositories {
     mavenCentral()
 }
 
+val testAgent by configurations.creating
+
 dependencies {
     implementation(project(":api"))
     implementation(libs.symbol.processing.api)
     implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlin.logging.jvm)
 
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    runtimeOnly(libs.slf4j.simple)
+
+    testImplementation(libs.mockk)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.kotlin.test)
+
+    testAgent(libs.byte.buddy.agent)
 }
 
 publishing {
@@ -69,4 +80,27 @@ publishing {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+testing {
+    suites {
+        @Suppress("UnstableApiUsage") val test by getting(JvmTestSuite::class) {
+            useJUnitJupiter("5.10.1")
+            dependencies {
+                implementation(libs.mockk)
+            }
+            targets.configureEach {
+                testTask.configure {
+                    jvmArgs(testAgent.files.map { "-javaagent:${it.absolutePath}" }) // comment this out to see warning
+                }
+            }
+            targets {
+                all {
+                    testTask.configure {
+                        jvmArgs("-Xshare:off")
+                    }
+                }
+            }
+        }
+    }
 }

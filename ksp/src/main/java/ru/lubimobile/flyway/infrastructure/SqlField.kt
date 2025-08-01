@@ -1,28 +1,21 @@
 package ru.lubimobile.flyway.infrastructure
 
+import kotlinx.serialization.Serializable
+
 /**
  * SQL Field property with create and modifier table
  */
+@Serializable
 data class SqlField(
     val name: String,
-    val sqlType: String,
-    val isNullable: Boolean = false,
-    val isUnique: Boolean = false,
-    val isPrimaryKey: Boolean = false,
-    val isAutoIncrement: Boolean = false,
-    val trigger: String? = null
+    val type: String,
+    val nullable: Boolean = false,
+    val unique: Boolean = false,
 ) {
 
     fun generateSqlString(): String = buildString {
-        append("    $name $sqlType")
-        if (isPrimaryKey) append(" PRIMARY KEY")
-        if (isAutoIncrement) append(" AUTOINCREMENT")
-        if (!isNullable) append(" NOT NULL")
-        if (isUnique) append(" UNIQUE")
-        if (trigger != null) append(" TRIGGER $trigger")
+        append("    $name $type")
+        if (nullable) append(" NULL") else append(" NOT NULL")
+        if (unique) append(" UNIQUE")
     }
 }
-
-data class Trigger(
-    val name: String = "default trigger"
-)

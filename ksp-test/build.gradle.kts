@@ -14,6 +14,12 @@ repositories {
 dependencies {
     ksp(project(":ksp"))
     implementation(project(":api"))
+    implementation(libs.jakarta.persistence.api)
+
+//    implementation(libs.flyway.core)
+//    implementation(libs.flyway.database.postgresql)
+//    implementation(libs.spring.boot.starter.data.jpa)
+
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

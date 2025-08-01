@@ -79,7 +79,7 @@ jobs:
               if: ${{ steps.read_version.outputs.is_snapshot == 'false' }}
               run: |
                   CUR=${{ steps.read_version.outputs.version }}
-                  NEXT=$(echo $CUR || awk -F. -v OFS=. '{$NF = $NF+1; print}')
+                  NEXT=$(echo $CUR | awk -F. -v OFS=. '{$NF = $NF+1; print}')
                   echo "🔄Bumping version to ${NEXT}-SNAPSHOT"
                   sed -i "s/^version=.*/version=${NEXT}-SNAPSHOT/" gradle.properties
                   
